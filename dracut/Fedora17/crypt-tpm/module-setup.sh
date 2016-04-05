@@ -21,6 +21,7 @@ check() {
                 done)
         [[ ${ID_FS_UUID} ]] || return 1
         if ! [[ $kernel_only ]]; then
+            mkdir -p "${initrd}/etc/cmdline.d/"
             echo " rd.luks.uuid=luks-${ID_FS_UUID} " >> "${initdir}/etc/cmdline.d/90crypt.conf"
         fi
         return 0
