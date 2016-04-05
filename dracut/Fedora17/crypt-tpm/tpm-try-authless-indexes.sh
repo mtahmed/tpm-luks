@@ -26,9 +26,9 @@ NOAUTH_INDEXES=""
 #ALL_INDEXES=$($GETCAP -cap 0xd | ${AWK} -F "= " '$1 ~ /Index/ {print $2 }' | ${AWK} -F "." '{ print $1 }')
 ALL_INDEXES=$($GETCAP -cap 0xd | ${AWK} -F: '$1 ~ /Index/ {print $2 }' | ${AWK} -F= '{ print $1 }')
 for i in $ALL_INDEXES; do
-	MATCH1=$($GETCAP -cap 0x11 -scap $i | ${AWK} -F ": " '$1 ~ /Matches/ { print $2 }')
-	SIZE=$($GETCAP -cap 0x11 -scap $i | ${AWK} -F= '$1 ~ /dataSize/ { print $2 }')
-	AUTH_BITS=0x$($GETCAP -cap 0x11 -scap $i | ${AWK} '$1 ~ /Result/ { print $11 }')
+	MATCH1=$($GETCAP -cap 0x11 -scap $(printf "%x" $i) | ${AWK} -F ": " '$1 ~ /Matches/ { print $2 }')
+	SIZE=$($GETCAP -cap 0x11 -scap $(printf "%x" $i) | ${AWK} -F= '$1 ~ /dataSize/ { print $2 }')
+	AUTH_BITS=0x$($GETCAP -cap 0x11 -scap $(printf "%x" $i) | ${AWK} '$1 ~ /Result/ { print $11 }')
 	if [ $i -gt ${TPM_LUKS_MAX_NV_INDEX} ]; then
 		continue
 	else
@@ -62,9 +62,9 @@ fi
 KEYFILE=${TMPFS_MNT}/key
 
 for NVINDEX in $NOAUTH_INDEXES; do
-	NVSIZE=$($GETCAP -cap 0x11 -scap ${NVINDEX} | ${AWK} -F= '$1 ~ /dataSize/ { print $2 }')
+	NVSIZE=$($GETCAP -cap 0x11 -scap $(printf "%x" ${NVINDEX}) | ${AWK} -F= '$1 ~ /dataSize/ { print $2 }')
 
-	$TPM_NVREAD -ix ${NVINDEX} -sz ${NVSIZE} -of ${KEYFILE} >/dev/null 2>&1
+	$TPM_NVREAD -ix $(printf "%x" ${NVINDEX}) -sz ${NVSIZE} -of ${KEYFILE} >/dev/null 2>&1
 	RC=$?
 	if [ ${RC} -ne 0 ]; then
 		echo "No auth TPM NV index ${NVINDEX}: error (${RC})"
