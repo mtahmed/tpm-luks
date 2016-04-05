@@ -42,11 +42,11 @@ AM_CFLAGS = -I/usr/linux/include -Wmissing-declarations -Wmissing-prototypes -Wn
 
 INCLUDES =  -Ilib
 #LDADD = lib/.libs/libtpm.a /usr/local/ssl/lib/libcrypto.a
-LDADD = lib/.libs/libtpm.a
+LDADD = lib/.libs/libtpm.a -lcrypto
 
 AM_CONDITIONAL = TPM_VTPM
 #AM_LDFLAGS = -all-static
-AM_LDFLAGS = -lc -ldl -lcrypto
+AM_LDFLAGS = -lc -ldl
 # These must go into /usr/bin because they'll be gathered up by dracut's
 # scripts as part of bnuilding the initramfs. The 'inst_binary' script
 # only looks in a few places, and /usr/local/bin isn't one of them
