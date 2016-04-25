@@ -94,7 +94,7 @@ These setup steps for RHEL and Fedora are required to include your current kerne
 and initramfs in the trust chain (if configured in D.) and to insert the code into
 your initramfs to read the LUKS secret from the TPM.
 
-a. RHEL 6 (may work elsewhere but so far only tested on RHEL 6)
+### RHEL 6 (may work elsewhere but so far only tested on RHEL 6)
 
 Run tpm-luks-init, or do these steps manually:
 
@@ -136,7 +136,7 @@ Run tpm-luks-init, or do these steps manually:
    for the RHEL kernel and change the initramfs path to
    /boot/initramfs-2.6.32-XXX.el6.x86_64-tpm-luks.img)
 
-b. Fedora 17
+### Fedora 17
 
 Do these steps manually:
 
