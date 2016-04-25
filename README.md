@@ -14,81 +14,79 @@ including the upstream trousers and tpm-tools packages.
 ## Required steps
 
 1. You can check that your TPM is available by looking for /dev/tpm0, which
-will exist if a kernel driver is loaded. If not you'll need to load the tpm_tis
-module (or other TPM 1.2 module depending on your platform). On RHEL 6, the tpm
-driver is built into the kernel -- on Fedora 17, you'll need to install the
-kernel-modules-extra package to get tpm_tis.
+   will exist if a kernel driver is loaded. If not you'll need to load the tpm_tis
+   module (or other TPM 1.2 module depending on your platform). On RHEL 6, the tpm
+   driver is built into the kernel -- on Fedora 17, you'll need to install the
+   kernel-modules-extra package to get tpm_tis.
 2. Install tpm-luks, tpm-tools >= 1.3.8, trousers >= 0.3.9. Available at
-sf.net/projects/trousers. Start the tcsd:
+   sf.net/projects/trousers. Start the tcsd:
+   ```
+   $ tcsd
+   ```
+   trousers 0.3.9 is included with Fedora 17. On Ubuntu, /dev/tpm0 ownership might
+   need to be changed to tss:tss: `chown tss:tss /dev/tpm0` if tcsd fails to start.
 
-```
-$ tcsd
-```
+   You can test if trousers and tpm-tools are working ok by running tpm_nvinfo.
+   If it errors out with missing library errors after a build, follow these steps:
 
-trousers 0.3.9 is included with Fedora 17. On Ubuntu, /dev/tpm0 ownership might
-need to be changed to tss:tss: `chown tss:tss /dev/tpm0` if tcsd fails to start.
+   After the trousers build:
 
-You can test if trousers and tpm-tools are working ok by running tpm_nvinfo.
-If it errors out with missing library errors after a build, follow these steps:
+   ```
+   $ echo "/usr/local/lib" >> /etc/ld.so.conf
+   $ ldconfig
+   ```
 
- After the trousers build:
+   or during the build:
 
-```
-$ echo "/usr/local/lib" >> /etc/ld.so.conf
-$ ldconfig
-```
-
-or during the build:
-
-```
-$ ./configure --prefix=/usr
-```
+   ```
+   $ ./configure --prefix=/usr
+   ```
 
 3. Take ownership of your TPM if you haven't before:
 
-```
-$ tpm_takeownership
-```
+   ```
+   $ tpm_takeownership
+   ```
 
 4. Mount securityfs:
 
-```
-$ mount -t securityfs securityfs /sys/kernel/security
-```
+   ```
+   $ mount -t securityfs securityfs /sys/kernel/security
+   ```
 
-and add to /etc/fstab to remount it automatically:
+   and add to /etc/fstab to remount it automatically:
 
-```
-   securityfs              /sys/kernel/security    securityfs defaults 0 0
-```
+   ```
+      securityfs              /sys/kernel/security    securityfs defaults 0 0
+   ```
 
 
 ## If the LUKS volume is not your rootfs
 
 1. Determine your LUKS encrypted partions:
 
-```
-$ blkid -t TYPE=crypto_LUKS
-/dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
-```
+   ```
+   $ blkid -t TYPE=crypto_LUKS
+   /dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
+   ```
 
 2. Add a new LUKS key to a key slot and the TPM:
 
-```
-# tpm-luks -c -d /dev/sda2
-Enter a new TPM NV area password: 
-Re-enter the new TPM NV area password: 
-Enter your TPM owner password: 
-Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
-You will now be prompted to enter any valid LUKS passphrase in order to store
-the new TPM NVRAM secret in LUKS key slot 1:
+   ```
+   # tpm-luks -c -d /dev/sda2
+   Enter a new TPM NV area password: 
+   Re-enter the new TPM NV area password: 
+   Enter your TPM owner password: 
+   Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
+   You will now be prompted to enter any valid LUKS passphrase in order to store
+   the new TPM NVRAM secret in LUKS key slot 1:
 
-Enter any passphrase: 
-Using NV index 2 for device /dev/sda2
-```
+   Enter any passphrase: 
+   Using NV index 2 for device /dev/sda2
+   ```
 
-tpm-luks creates a 32-byte binary key and writes it TPM NVRAM. An extra byte
-is prepended as a version check.
+   tpm-luks creates a 32-byte binary key and writes it TPM NVRAM. An extra byte
+   is prepended as a version check.
 
 ## If the LUKS volume is your rootfs
 
@@ -102,41 +100,41 @@ Run tpm-luks-init, or do these steps manually:
 
 1. Determine your LUKS encrypted partions:
 
-```
-$ blkid -t TYPE=crypto_LUKS
-/dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
-```
+   ```
+   $ blkid -t TYPE=crypto_LUKS
+   /dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
+   ```
 
 2. Add a new LUKS key to a key slot and the TPM:
 
-```
-# tpm-luks -c -d /dev/sda2
-Enter a new TPM NV area password: 
-Re-enter the new TPM NV area password: 
-Enter your TPM owner password: 
-Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
-You will now be prompted to enter any valid LUKS passphrase in order to store
-the new TPM NVRAM secret in LUKS key slot 1:
+   ```
+   # tpm-luks -c -d /dev/sda2
+   Enter a new TPM NV area password: 
+   Re-enter the new TPM NV area password: 
+   Enter your TPM owner password: 
+   Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
+   You will now be prompted to enter any valid LUKS passphrase in order to store
+   the new TPM NVRAM secret in LUKS key slot 1:
 
-Enter any passphrase: 
-Using NV index 2 for device /dev/sda2
-```
+   Enter any passphrase: 
+   Using NV index 2 for device /dev/sda2
+   ```
 
 3. Add code to query the TPM to the initramfs:
 
-```
-$ dracut /boot/initramfs-2.6.32-XXX.el6.x86_64-tpm-luks.img
-```
+   ```
+   $ dracut /boot/initramfs-2.6.32-XXX.el6.x86_64-tpm-luks.img
+   ```
 
 4. Create a new boot entry that uses the new initramfs:
 
-```
-$ vi /boot/grub/menu.lst
-```
+   ```
+   $ vi /boot/grub/menu.lst
+   ```
 
-(The only change you need to make here is to copy the current boot entry
-for the RHEL kernel and change the initramfs path to
-/boot/initramfs-2.6.32-XXX.el6.x86_64-tpm-luks.img)
+   (The only change you need to make here is to copy the current boot entry
+   for the RHEL kernel and change the initramfs path to
+   /boot/initramfs-2.6.32-XXX.el6.x86_64-tpm-luks.img)
 
 b. Fedora 17
 
@@ -144,44 +142,44 @@ Do these steps manually:
 
 1. Determine your LUKS encrypted partions:
 
-```
-$ blkid -t TYPE=crypto_LUKS
-/dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
-```
+   ```
+   $ blkid -t TYPE=crypto_LUKS
+   /dev/sda2: UUID="4cb97e1f-b921-4f1a-bd86-032831b277af" TYPE="crypto_LUKS"
+   ```
 
 2. Add a new LUKS key to a key slot and the TPM:
 
-```
-$ tpm-luks -c -d /dev/sda2
-Enter a new TPM NV area password: 
-Re-enter the new TPM NV area password: 
-Enter your TPM owner password: 
-Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
-You will now be prompted to enter any valid LUKS passphrase in order to store
-the new TPM NVRAM secret in LUKS key slot 1:
+   ```
+   $ tpm-luks -c -d /dev/sda2
+   Enter a new TPM NV area password: 
+   Re-enter the new TPM NV area password: 
+   Enter your TPM owner password: 
+   Successfully wrote 33 bytes at offset 0 to NVRAM index 0x2 (2).
+   You will now be prompted to enter any valid LUKS passphrase in order to store
+   the new TPM NVRAM secret in LUKS key slot 1:
 
-Enter any passphrase: 
-Using NV index 2 for device /dev/sda2
-```
+   Enter any passphrase: 
+   Using NV index 2 for device /dev/sda2
+   ```
 
 3. Add code to query the TPM to the initramfs:
 
-```
-$ dracut /boot/initramfs-3.4.4-5.fc17.x86_64-tpm-luks.img
-```
+   ```
+   $ dracut /boot/initramfs-3.4.4-5.fc17.x86_64-tpm-luks.img
+   ```
 
 4. Create a new boot entry that uses the new initramfs:
 
-```
-$ vim /boot/grub2/grub.cfg
-```
+   ```
+   $ vim /boot/grub2/grub.cfg
+   ```
 
-(The only change you need to make here is to copy the current boot entry
-for Fedora and change the initramfs path to 
-/boot/initramfs-3.X.X-X.fc17.x86_64-tpm-luks.img)
+   (The only change you need to make here is to copy the current boot entry
+   for Fedora and change the initramfs path to 
+   /boot/initramfs-3.X.X-X.fc17.x86_64-tpm-luks.img)
 
-From https://fedoraproject.org/wiki/GRUB_2:
-"It is safe to directly edit /boot/grub2/grub.cfg in Fedora."
+   From https://fedoraproject.org/wiki/GRUB_2:
+   "It is safe to directly edit /boot/grub2/grub.cfg in Fedora."
 
 8. Reboot
 
@@ -208,12 +206,12 @@ Once you've installed TrustedGrub successfully, reboot, then continue
 with these steps:
 
 1. Edit /etc/tpm-luks.conf and set either the 'profile' or 'pcrs' option
-to tell tpm-luks to use the PCRs you choose. You'll want to take some time
-and make sure you really understand what you're doing here. If you remove
-your non-TPM keys from your LUKS header and then your system config
-changes, you could lose access to your LUKS partition. Make sure you backup
-your LUKS header before removing all the non-TPM keys!
- ATM, only the "srtm" profile or PCRs 0-15 are supported.
+   to tell tpm-luks to use the PCRs you choose. You'll want to take some time
+   and make sure you really understand what you're doing here. If you remove
+   your non-TPM keys from your LUKS header and then your system config
+   changes, you could lose access to your LUKS partition. Make sure you backup
+   your LUKS header before removing all the non-TPM keys!
+   ATM, only the "srtm" profile or PCRs 0-15 are supported.
 
 2. Complete the steps in C.I. or C.II. above
 
@@ -224,13 +222,15 @@ your LUKS header before removing all the non-TPM keys!
   migrate your current TPM NVRAM secret to the new PCR values for the
   changed kernel+initramfs.
 
-E. Backup
+## Backup
 
-  1. Backup your current LUKS header
-    $ cryptsetup luksHeaderBackup <device> --header-backup-file <file>
+1. Backup your current LUKS header
+   ```
+   $ cryptsetup luksHeaderBackup <device> --header-backup-file <file>
+   ```
 
-  2. Remove the LUKS key slot with the non-TPM key, using a secret held
-  in the TPM:
-    $ tpm-luks -k -s <slot>
-
-EOF
+2. Remove the LUKS key slot with the non-TPM key, using a secret held
+   in the TPM:
+   ```
+   $ tpm-luks -k -s <slot>
+   ```
